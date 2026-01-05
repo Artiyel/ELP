@@ -83,7 +83,7 @@ func abs(x int) int {
 func main() {
 
 	// on prend l'image de base
-    file, err := os.Open("Marmite_UMARY_WM-94.jpg")
+    file, err := os.Open("images/Marmite_UMARY_WM-94.jpg")
     if err != nil {
         panic(err)
     }
@@ -99,7 +99,7 @@ func main() {
     out := Sobel(img)
 
 	// on crée le fichier de sortie
-    outFile, err := os.Create("output.jpg")
+    outFile, err := os.Create("images/output.jpg")
     if err != nil {
         panic(err)
     }

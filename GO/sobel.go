@@ -3,6 +3,8 @@ package main
 import (
 	"image"
 	"image/color"
+	"os"
+	"image/jpeg"
 )
 
 func Sobel(img image.Image) *image.RGBA {
@@ -75,4 +77,33 @@ func abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+
+func main() {
+
+	// on prend l'image de base
+    file, err := os.Open("Marmite_UMARY_WM-94.jpg")
+    if err != nil {
+        panic(err)
+    }
+	// on ferme le fichier après la fonction
+    defer file.Close()
+
+    img, _, err := image.Decode(file)
+    if err != nil {
+        panic(err)
+    }
+
+	// on appelle Sobel
+    out := Sobel(img)
+
+	// on crée le fichier de sortie
+    outFile, err := os.Create("output.jpg")
+    if err != nil {
+        panic(err)
+    }
+    defer outFile.Close()
+
+    jpeg.Encode(outFile, out, nil)
 }

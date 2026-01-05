@@ -2,98 +2,124 @@ package main
 
 import (
 	"image"
-	"image/color"
+	"image/draw"
 	_ "image/jpeg"
 	"image/png"
-	_ "image/png"
 	"os"
 	"runtime"
 	"sync"
 )
 
-func SplitChannelsParallel(src image.Image, workers int) (*image.RGBA, *image.RGBA, *image.RGBA) {
-	bounds := src.Bounds() //prends les dimensions de l'image
+// Job correspond à une ligne à traiter
+type Job struct {
+	y int
+}
 
-	rImg := image.NewRGBA(bounds) //crée une image par canal de couleur
+// Worker pool pour séparer les canaux de couleur
+func worker(rgba *image.RGBA, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGroup) {
+	bounds := rgba.Bounds()
+	stride := rgba.Stride
+
+	for job := range jobs {
+		y := job.y
+		rowOffset := (y - bounds.Min.Y) * stride
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			i := rowOffset + (x-bounds.Min.X)*4
+			r := rgba.Pix[i]
+			g := rgba.Pix[i+1]
+			b := rgba.Pix[i+2]
+
+			rImg.Pix[i] = r
+			rImg.Pix[i+1] = 0
+			rImg.Pix[i+2] = 0
+			rImg.Pix[i+3] = 255
+
+			gImg.Pix[i] = 0
+			gImg.Pix[i+1] = g
+			gImg.Pix[i+2] = 0
+			gImg.Pix[i+3] = 255
+
+			bImg.Pix[i] = 0
+			bImg.Pix[i+1] = 0
+			bImg.Pix[i+2] = b
+			bImg.Pix[i+3] = 255
+		}
+		wg.Done()
+	}
+}
+
+// SplitChannelsWorkerPool utilise un worker pool
+func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers int) (*image.RGBA, *image.RGBA, *image.RGBA) {
+	bounds := rgba.Bounds()
+
+	rImg := image.NewRGBA(bounds)
 	gImg := image.NewRGBA(bounds)
 	bImg := image.NewRGBA(bounds)
 
-	height := bounds.Dy()
-	chunk := height / workers //defini la taille d'une ligne en fonction du nombre de worker
-
+	jobs := make(chan Job, bounds.Dy())
 	var wg sync.WaitGroup
 
-	for i := 0; i < workers; i++ { //pour chaque worker
-		yStart := bounds.Min.Y + i*chunk
-		yEnd := yStart + chunk //travaille sur une plage définie
-
-		if i == workers-1 {
-			yEnd = bounds.Max.Y //si c'est le dernier worker, travaille jusqu'a la fin
-		}
-
-		wg.Add(1)
-		go splitChannelsChunk( //lance splitchannelschunk avec en parametre le chunk qui a été décidé plus haut
-			src, rImg, gImg, bImg,
-			yStart, yEnd, &wg,
-		)
+	// Lancer les workers
+	for i := 0; i < numWorkers; i++ {
+		go worker(rgba, rImg, gImg, bImg, jobs, &wg)
 	}
 
+	// Envoyer les jobs (une ligne = un job)
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		wg.Add(1)
+		jobs <- Job{y: y}
+	}
+
+	// Tous les jobs sont envoyés, fermer le channel
+	close(jobs)
+
+	// Attendre que tout soit fini
 	wg.Wait()
 	return rImg, gImg, bImg
 }
 
-func splitChannelsChunk(src image.Image, rImg, gImg, bImg *image.RGBA, yStart, yEnd int, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	bounds := src.Bounds() //reprend les bounds qui ont été mise en parametre
-
-	for y := yStart; y < yEnd; y++ { //pour chaque lignes
-		for x := bounds.Min.X; x < bounds.Max.X; x++ { //pour chaque pixel dans une ligne
-			r, g, b, _ := src.At(x, y).RGBA() //prend la couleur
-
-			// Conversion 16 bits -> 8 bits
-			r8 := uint8(r >> 8)
-			g8 := uint8(g >> 8)
-			b8 := uint8(b >> 8)
-
-			rImg.Set(x, y, color.RGBA{r8, 0, 0, 255}) //met la couleur du pixel sur une image a la bonne couleur
-			gImg.Set(x, y, color.RGBA{0, g8, 0, 255})
-			bImg.Set(x, y, color.RGBA{0, 0, b8, 255})
-		}
-	}
-}
-
+// Sauvegarde en PNG
 func savePNG(filename string, img image.Image) {
 	f, err := os.Create(filename)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-
 	png.Encode(f, img)
 }
 
 func main() {
+	// Forcer l'utilisation de tous les cœurs
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	// Ouvrir l'image
-	file, err := os.Open("images/heic1509a.jpg") //ouvre l'image
+	file, err := os.Open("images/heic1509a.jpg")
 	if err != nil {
-		panic(err) //error handling
+		panic(err)
 	}
 	defer file.Close()
 
-	img, format, err := image.Decode(file) //decode l'image
+	img, format, err := image.Decode(file)
 	if err != nil {
-		panic(err) //error handling
+		panic(err)
 	}
-
 	println("Format détecté :", format)
 
-	workers := runtime.NumCPU() //workers = nb de coeurs de ton cpu
+	// Convertir en RGBA pour un accès direct à la mémoire
+	bounds := img.Bounds()
+	rgba := image.NewRGBA(bounds)
+	draw.Draw(rgba, bounds, img, bounds.Min, draw.Src)
 
-	rImg, gImg, bImg := SplitChannelsParallel(img, workers)
+	numWorkers := runtime.NumCPU()
+	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, numWorkers)
 
 	// Sauvegarde
-	savePNG("images/red.png", rImg)
-	savePNG("images/green.png", gImg)
-	savePNG("images/blue.png", bImg)
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() { savePNG("images/red.png", rImg); wg.Done() }()
+	go func() { savePNG("images/green.png", gImg); wg.Done() }()
+	go func() { savePNG("images/blue.png", bImg); wg.Done() }()
+	wg.Wait()
+
+	println("Terminé !")
 }

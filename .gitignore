@@ -1,1 +1,22 @@
-./GO/images/
+# Images raster
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.tif
+*.webp
+*.avif
+*.heic
+*.heif
+
+# Images vectorielles
+*.svg
+*.eps
+*.ai
+*.pdf
+
+# Icônes
+*.ico
+*.icns

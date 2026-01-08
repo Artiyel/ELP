@@ -20,7 +20,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// 1. Charger l'image
-	file, err := os.Open("images/heic1501a.jpg")
+	file, err := os.Open("images/heic1509a.jpg")
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func main() {
 	t1 := time.Now()
 
 	// 4. Sauvegarde
-	savePNG("out.png", outRGBA)
+	savePNG("images/out.png", outRGBA)
 	t2 := time.Now()
 	println("Traitement terminé : out.png")
 	println("Temps de calcul : ", t1.Sub(t0))

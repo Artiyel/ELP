@@ -124,7 +124,7 @@ func main() {
 	// Traitement en worker pool avec blocs de 50 lignes
 	tjob := time.Now()
 	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, numWorkers, 50)
-	println("temps de calcul     : ", time.Now().Sub(tjob))
+	println("temps de calcul     : ", time.Now().Sub(tjob), "ms")
 
 	// Sauvegarde parallèle
 	t1 := time.Now()
@@ -134,7 +134,7 @@ func main() {
 	go func() { savePNG("images/green.png", gImg); wg.Done() }()
 	go func() { savePNG("images/blue.png", bImg); wg.Done() }()
 	wg.Wait()
-	println("temps de sauvegarde : ", time.Now().Sub(t1))
+	println("temps de sauvegarde : ", time.Now().Sub(t1), "ms")
 
 	println("Terminé !")
 }

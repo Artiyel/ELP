@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 )
 
 // Job correspond à un bloc de lignes à traiter
@@ -95,12 +96,12 @@ func savePNG(filename string, img image.Image) {
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU() / 6)
-	numWorkers := 1
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	numWorkers := runtime.NumCPU()
 	println("Nombre de workers:", numWorkers)
 
 	// Ouvrir l'image
-	file, err := os.Open("images/heic1501a.jpg")
+	file, err := os.Open("images/heic1509a.jpg")
 	if err != nil {
 		panic(err)
 	}
@@ -118,15 +119,19 @@ func main() {
 	draw.Draw(rgba, bounds, img, bounds.Min, draw.Src)
 
 	// Traitement en worker pool avec blocs de 50 lignes
+	tjob := time.Now()
 	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, numWorkers, 50)
+	println("temps de calcul     : ", time.Now().Sub(tjob))
 
 	// Sauvegarde parallèle
+	t1 := time.Now()
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() { savePNG("images/red.png", rImg); wg.Done() }()
 	go func() { savePNG("images/green.png", gImg); wg.Done() }()
 	go func() { savePNG("images/blue.png", bImg); wg.Done() }()
 	wg.Wait()
+	println("temps de sauvegarde : ", time.Now().Sub(t1))
 
 	println("Terminé !")
 }

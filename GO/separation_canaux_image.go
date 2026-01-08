@@ -93,7 +93,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Ouvrir l'image
-	file, err := os.Open("images/heic1509a.jpg")
+	file, err := os.Open("images/heic1501a.jpg")
 	if err != nil {
 		panic(err)
 	}

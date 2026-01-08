@@ -2,105 +2,154 @@ package main
 
 import (
 	"image"
-	"image/color"
+	"image/draw"
 	_ "image/jpeg"
 	"image/png"
-	_ "image/png"
-	"math"
 	"os"
 	"runtime"
 	"sync"
 )
 
-func SobParallel(src image.Image, workers int) *image.RGBA {
-	bounds := src.Bounds()
-	height := bounds.Dy()
-
-	out := image.NewRGBA(bounds)
-
-	chunk := height / workers
-	var wg sync.WaitGroup
-
-	for i := 0; i < workers; i++ {
-		yStart := bounds.Min.Y + i*chunk
-		yEnd := yStart + chunk
-		if i == workers-1 {
-			yEnd = bounds.Max.Y
-		}
-
-		wg.Add(1)
-		go Sobel(src, out, yStart, yEnd, &wg)
-	}
-
-	wg.Wait()
-	return out
+// Job représente une ligne de l'image à traiter
+type Job struct {
+	y int
 }
 
-func Sobel(src image.Image, out *image.RGBA, yStart int, yEnd int, wg *sync.WaitGroup) {
-	defer wg.Done()
+func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	// 1. Charger l'image
+	file, err := os.Open("images/heic1501a.jpg")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		panic(err)
+	}
+
+	// 2. Préparer les images (Accès direct Pix)
+	bounds := img.Bounds()
+	srcRGBA := image.NewRGBA(bounds)
+	draw.Draw(srcRGBA, bounds, img, bounds.Min, draw.Src)
+	outRGBA := image.NewRGBA(bounds)
+
+	// 3. Lancer le traitement parallèle avec Worker Pool
+	numWorkers := runtime.NumCPU()
+	SobelWorkerPool(srcRGBA, outRGBA, numWorkers)
+
+	// 4. Sauvegarde
+	savePNG("out.png", outRGBA)
+	println("Traitement terminé : out.png")
+}
+
+func SobelWorkerPool(src *image.RGBA, out *image.RGBA, numWorkers int) {
 	bounds := src.Bounds()
+	jobs := make(chan Job, bounds.Dy())
+	var wg sync.WaitGroup
 
-	// Matrices de Sobel
-	GX := [3][3]int{
-		{-1, 0, 1},
-		{-2, 0, 2},
-		{-1, 0, 1},
+	// Lancer les workers
+	for i := 0; i < numWorkers; i++ {
+		go sobelWorker(src, out, jobs, &wg)
 	}
 
-	GY := [3][3]int{
-		{1, 2, 1},
-		{0, 0, 0},
-		{-1, -2, -1},
+	// Envoyer chaque ligne comme un job (on évite les bords y=0 et y=max)
+	for y := bounds.Min.Y + 1; y < bounds.Max.Y-1; y++ {
+		wg.Add(1)
+		jobs <- Job{y: y}
 	}
 
-	// On itère en restant à 1 pixel des bords pour éviter les dépassements d'index avec [i+1][j+1]
-	for y := yStart; y < yEnd; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+	close(jobs)
+	wg.Wait()
+}
 
-			// Ignorer les pixels de bordure pure pour simplifier
-			if x == bounds.Min.X || x >= bounds.Max.X-1 || y == bounds.Min.Y || y >= bounds.Max.Y-1 {
-				continue
-			}
+func sobelWorker(src *image.RGBA, out *image.RGBA, jobs <-chan Job, wg *sync.WaitGroup) {
+	bounds := src.Bounds()
+	stride := src.Stride
 
-			var valRx, valGx, valBx int
-			var valRy, valGy, valBy int
+	// Matrices Sobel
+	gxMask := [3][3]int{{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}}
+	gyMask := [3][3]int{{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}}
 
-			for i := -1; i <= 1; i++ {
-				for j := -1; j <= 1; j++ {
-					// Correction : Utilisation de src.At et non img.At
-					r, g, b, _ := src.At(x+i, y+j).RGBA()
+	for job := range jobs {
+		y := job.y
+		for x := bounds.Min.X + 1; x < bounds.Max.X-1; x++ {
+			var rGx, gGx, bGx int
+			var rGy, gGy, bGy int
 
-					// Conversion en 8 bits (0-255)
-					r8, g8, b8 := int(r>>8), int(g>>8), int(b>>8)
+			// Convolution 3x3
+			for j := -1; j <= 1; j++ {
+				for i := -1; i <= 1; i++ {
+					pixelIdx := (y+j)*stride + (x+i)*4
 
-					// Application des masques
-					weightX := GX[j+1][i+1] // j=ligne, i=colonne
-					weightY := GY[j+1][i+1]
+					r := int(src.Pix[pixelIdx])
+					g := int(src.Pix[pixelIdx+1])
+					b := int(src.Pix[pixelIdx+2])
 
-					valRx += r8 * weightX
-					valGx += g8 * weightX
-					valBx += b8 * weightX
+					wx := gxMask[j+1][i+1]
+					wy := gyMask[j+1][i+1]
 
-					valRy += r8 * weightY
-					valGy += g8 * weightY
-					valBy += b8 * weightY
+					rGx += r * wx
+					gGx += g * wx
+					bGx += b * wx
+
+					rGy += r * wy
+					gGy += g * wy
+					bGy += b * wy
 				}
 			}
 
-			// Calcul de la magnitude finale : sqrt(Gx^2 + Gy^2)
-			resR := math.Sqrt(float64(valRx*valRx + valRy*valRy))
-			resG := math.Sqrt(float64(valGx*valGx + valGy*valGy))
-			resB := math.Sqrt(float64(valBx*valBx + valBy*valBy))
+			// Calcul manuel de la magnitude (Approximation rapide : |Gx| + |Gy|)
+			// Rouge
+			absRGx, absRGy := rGx, rGy
+			if absRGx < 0 {
+				absRGx = -absRGx
+			}
+			if absRGy < 0 {
+				absRGy = -absRGy
+			}
+			magR := absRGx + absRGy
 
-			// On sature à 255
-			out.Set(x, y, color.RGBA{
-				uint8(math.Min(255, resR)),
-				uint8(math.Min(255, resG)),
-				uint8(math.Min(255, resB)),
-				255,
-			})
+			// Vert
+			absGGx, absGGy := gGx, gGy
+			if absGGx < 0 {
+				absGGx = -absGGx
+			}
+			if absGGy < 0 {
+				absGGy = -absGGy
+			}
+			magG := absGGx + absGGy
+
+			// Bleu
+			absBGx, absBGy := bGx, bGy
+			if absBGx < 0 {
+				absBGx = -absBGx
+			}
+			if absBGy < 0 {
+				absBGy = -absBGy
+			}
+			magB := absBGx + absBGy
+
+			// Écriture directe et saturation à 255
+			outIdx := y*stride + x*4
+			if magR > 255 {
+				magR = 255
+			}
+			if magG > 255 {
+				magG = 255
+			}
+			if magB > 255 {
+				magB = 255
+			}
+
+			out.Pix[outIdx] = uint8(magR)
+			out.Pix[outIdx+1] = uint8(magG)
+			out.Pix[outIdx+2] = uint8(magB)
+			out.Pix[outIdx+3] = 255
 		}
+		wg.Done()
 	}
 }
 
@@ -110,31 +159,5 @@ func savePNG(filename string, img image.Image) {
 		panic(err)
 	}
 	defer f.Close()
-
 	png.Encode(f, img)
-}
-
-func main() {
-	// Ouvrir l'image
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	file, err := os.Open("images/heic1501a.jpg")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	img, format, err := image.Decode(file)
-	if err != nil {
-		panic(err)
-	}
-
-	println("Format détecté :", format)
-
-	workers := runtime.NumCPU()
-
-	out := SobParallel(img, workers)
-
-	// Sauvegarde
-	savePNG("out.png", out)
-
 }

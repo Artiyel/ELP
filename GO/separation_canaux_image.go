@@ -10,53 +10,57 @@ import (
 	"sync"
 )
 
-// Job correspond à une ligne à traiter
+// Job correspond à un bloc de lignes à traiter
 type Job struct {
-	y int
+	yStart, yEnd int
 }
 
 // Worker pool pour séparer les canaux de couleur
-func worker(rgba *image.RGBA, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGroup) {
+func worker(rgba, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGroup) {
 	bounds := rgba.Bounds()
 	stride := rgba.Stride
 
 	for job := range jobs {
-		y := job.y
-		rowOffset := (y - bounds.Min.Y) * stride
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			i := rowOffset + (x-bounds.Min.X)*4
-			r := rgba.Pix[i]
-			g := rgba.Pix[i+1]
-			b := rgba.Pix[i+2]
+		for y := job.yStart; y < job.yEnd; y++ {
+			rowOffset := (y - bounds.Min.Y) * stride
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				i := rowOffset + (x-bounds.Min.X)*4
+				r := rgba.Pix[i]
+				g := rgba.Pix[i+1]
+				b := rgba.Pix[i+2]
 
-			rImg.Pix[i] = r
-			rImg.Pix[i+1] = 0
-			rImg.Pix[i+2] = 0
-			rImg.Pix[i+3] = 255
+				// Rouge
+				rImg.Pix[i] = r
+				rImg.Pix[i+1] = 0
+				rImg.Pix[i+2] = 0
+				rImg.Pix[i+3] = 255
 
-			gImg.Pix[i] = 0
-			gImg.Pix[i+1] = g
-			gImg.Pix[i+2] = 0
-			gImg.Pix[i+3] = 255
+				// Vert
+				gImg.Pix[i] = 0
+				gImg.Pix[i+1] = g
+				gImg.Pix[i+2] = 0
+				gImg.Pix[i+3] = 255
 
-			bImg.Pix[i] = 0
-			bImg.Pix[i+1] = 0
-			bImg.Pix[i+2] = b
-			bImg.Pix[i+3] = 255
+				// Bleu
+				bImg.Pix[i] = 0
+				bImg.Pix[i+1] = 0
+				bImg.Pix[i+2] = b
+				bImg.Pix[i+3] = 255
+			}
 		}
 		wg.Done()
 	}
 }
 
 // SplitChannelsWorkerPool utilise un worker pool
-func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers int) (*image.RGBA, *image.RGBA, *image.RGBA) {
+func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers, blockSize int) (*image.RGBA, *image.RGBA, *image.RGBA) {
 	bounds := rgba.Bounds()
 
 	rImg := image.NewRGBA(bounds)
 	gImg := image.NewRGBA(bounds)
 	bImg := image.NewRGBA(bounds)
 
-	jobs := make(chan Job, bounds.Dy())
+	jobs := make(chan Job, numWorkers*2) // buffer pour éviter blocage
 	var wg sync.WaitGroup
 
 	// Lancer les workers
@@ -64,17 +68,19 @@ func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers int) (*image.RGBA, *im
 		go worker(rgba, rImg, gImg, bImg, jobs, &wg)
 	}
 
-	// Envoyer les jobs (une ligne = un job)
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+	// Créer les jobs par bloc de `blockSize` lignes
+	for y := bounds.Min.Y; y < bounds.Max.Y; y += blockSize {
+		yEnd := y + blockSize
+		if yEnd > bounds.Max.Y {
+			yEnd = bounds.Max.Y
+		}
 		wg.Add(1)
-		jobs <- Job{y: y}
+		jobs <- Job{yStart: y, yEnd: yEnd}
 	}
 
-	// Tous les jobs sont envoyés, fermer le channel
 	close(jobs)
-
-	// Attendre que tout soit fini
 	wg.Wait()
+
 	return rImg, gImg, bImg
 }
 
@@ -89,8 +95,9 @@ func savePNG(filename string, img image.Image) {
 }
 
 func main() {
-	// Forcer l'utilisation de tous les cœurs
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU() / 6)
+	numWorkers := 1
+	println("Nombre de workers:", numWorkers)
 
 	// Ouvrir l'image
 	file, err := os.Open("images/heic1501a.jpg")
@@ -110,10 +117,10 @@ func main() {
 	rgba := image.NewRGBA(bounds)
 	draw.Draw(rgba, bounds, img, bounds.Min, draw.Src)
 
-	numWorkers := runtime.NumCPU()
-	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, numWorkers)
+	// Traitement en worker pool avec blocs de 50 lignes
+	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, numWorkers, 50)
 
-	// Sauvegarde
+	// Sauvegarde parallèle
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() { savePNG("images/red.png", rImg); wg.Done() }()

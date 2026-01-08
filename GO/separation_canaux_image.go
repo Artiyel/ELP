@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
@@ -99,9 +100,12 @@ func savePNG(filename string, img image.Image) {
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	numWorkers := runtime.NumCPU()
-	println("Nombre de workers:", numWorkers)
+
+	numWorkers := flag.Int("n", runtime.NumCPU(), "Nombre de workers")
+	sauvegarde := flag.Bool("s", true, "Active ou non la sauvegarde du fichier résultant")
+	flag.Parse()
+
+	println("Nombre de workers:", *numWorkers)
 
 	// Ouvrir l'image
 	file, err := os.Open("images/heic1509a.jpg")
@@ -123,18 +127,19 @@ func main() {
 
 	// Traitement en worker pool avec blocs de 50 lignes
 	tjob := time.Now()
-	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, numWorkers, 50)
-	println("temps de calcul     : ", time.Now().Sub(tjob), "ms")
+	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, *numWorkers, 100)
+	println("temps de calcul     : ", time.Now().Sub(tjob)/1000000, "ms")
 
-	// Sauvegarde parallèle
-	t1 := time.Now()
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() { savePNG("images/red.png", rImg); wg.Done() }()
-	go func() { savePNG("images/green.png", gImg); wg.Done() }()
-	go func() { savePNG("images/blue.png", bImg); wg.Done() }()
-	wg.Wait()
-	println("temps de sauvegarde : ", time.Now().Sub(t1), "ms")
-
+	if *sauvegarde {
+		// Sauvegarde en parallèle des différents canaux
+		t1 := time.Now()
+		var wg sync.WaitGroup
+		wg.Add(3)
+		go func() { savePNG("images/red.png", rImg); wg.Done() }()
+		go func() { savePNG("images/green.png", gImg); wg.Done() }()
+		go func() { savePNG("images/blue.png", bImg); wg.Done() }()
+		wg.Wait()
+		println("temps de sauvegarde : ", time.Now().Sub(t1)/1000000, "ms")
+	}
 	println("Terminé !")
 }

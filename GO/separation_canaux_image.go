@@ -18,6 +18,7 @@ type Job struct {
 
 // Worker pool pour séparer les canaux de couleur
 func worker(rgba, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGroup) {
+	defer wg.Done()
 	bounds := rgba.Bounds()
 	stride := rgba.Stride
 
@@ -62,7 +63,9 @@ func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers, blockSize int) (*imag
 	bImg := image.NewRGBA(bounds)
 
 	jobs := make(chan Job, numWorkers*2) // buffer pour éviter blocage
+
 	var wg sync.WaitGroup
+	wg.Add(numWorkers)
 
 	// Lancer les workers
 	for i := 0; i < numWorkers; i++ {

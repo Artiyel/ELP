@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 )
 
 // Job représente une ligne de l'image à traiter
@@ -36,13 +37,18 @@ func main() {
 	draw.Draw(srcRGBA, bounds, img, bounds.Min, draw.Src)
 	outRGBA := image.NewRGBA(bounds)
 
+	t0 := time.Now()
 	// 3. Lancer le traitement parallèle avec Worker Pool
-	numWorkers := runtime.NumCPU()
+	numWorkers := 1
 	SobelWorkerPool(srcRGBA, outRGBA, numWorkers)
+	t1 := time.Now()
 
 	// 4. Sauvegarde
 	savePNG("out.png", outRGBA)
+	t2 := time.Now()
 	println("Traitement terminé : out.png")
+	println("Temps de calcul : ", t1.Sub(t0))
+	println("Temps de sauvegarde :", t2.Sub(t1))
 }
 
 func SobelWorkerPool(src *image.RGBA, out *image.RGBA, numWorkers int) {

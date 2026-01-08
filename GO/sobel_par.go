@@ -18,7 +18,7 @@ type Job struct {
 func main() {
 
 	// 1. Charger l'image
-	file, err := os.Open("images/heic1501a.jpg")
+	file, err := os.Open("images/heic1509a.jpg")
 	if err != nil {
 		panic(err)
 	}

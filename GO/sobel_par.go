@@ -5,6 +5,7 @@ import (
 	"image/draw"
 	_ "image/jpeg"
 	"image/png"
+	"math"
 	"os"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ type Job struct {
 func main() {
 
 	// 1. Charger l'image
-	file, err := os.Open("images/heic1509a.jpg")
+	file, err := os.Open("images/Marmite_UMARY_WM-94.jpg")
 	if err != nil {
 		panic(err)
 	}
@@ -80,77 +81,33 @@ func sobelWorker(src *image.RGBA, out *image.RGBA, jobs <-chan Job, wg *sync.Wai
 	for job := range jobs {
 		y := job.y
 		for x := bounds.Min.X + 1; x < bounds.Max.X-1; x++ {
-			var rGx, gGx, bGx int
-			var rGy, gGy, bGy int
+			var Gx, Gy float64
 
 			// Convolution 3x3
 			for j := -1; j <= 1; j++ {
 				for i := -1; i <= 1; i++ {
-					pixelIdx := (y+j)*stride + (x+i)*4
+					pixelIdx := (y+j-bounds.Min.Y)*stride + (x+i-bounds.Min.X)*4
+					r := float64(src.Pix[pixelIdx])
+					g := float64(src.Pix[pixelIdx+1])
+					b := float64(src.Pix[pixelIdx+2])
+					lum := 0.299*r + 0.587*g + 0.114*b
 
-					r := int(src.Pix[pixelIdx])
-					g := int(src.Pix[pixelIdx+1])
-					b := int(src.Pix[pixelIdx+2])
-
-					wx := gxMask[j+1][i+1]
-					wy := gyMask[j+1][i+1]
-
-					rGx += r * wx
-					gGx += g * wx
-					bGx += b * wx
-
-					rGy += r * wy
-					gGy += g * wy
-					bGy += b * wy
+					Gx += lum * float64(gxMask[j+1][i+1])
+					Gy += lum * float64(gyMask[j+1][i+1])
 				}
 			}
 
 			// Calcul manuel de la magnitude (Approximation rapide : |Gx| + |Gy|)
-			// Rouge
-			absRGx, absRGy := rGx, rGy
-			if absRGx < 0 {
-				absRGx = -absRGx
+			mag := math.Sqrt(Gx*Gx + Gy*Gy)
+			if mag > 255 {
+				mag = 255
 			}
-			if absRGy < 0 {
-				absRGy = -absRGy
-			}
-			magR := absRGx + absRGy
+			val := uint8(mag)
 
-			// Vert
-			absGGx, absGGy := gGx, gGy
-			if absGGx < 0 {
-				absGGx = -absGGx
-			}
-			if absGGy < 0 {
-				absGGy = -absGGy
-			}
-			magG := absGGx + absGGy
-
-			// Bleu
-			absBGx, absBGy := bGx, bGy
-			if absBGx < 0 {
-				absBGx = -absBGx
-			}
-			if absBGy < 0 {
-				absBGy = -absBGy
-			}
-			magB := absBGx + absBGy
-
-			// Écriture directe et saturation à 255
-			outIdx := y*stride + x*4
-			if magR > 255 {
-				magR = 255
-			}
-			if magG > 255 {
-				magG = 255
-			}
-			if magB > 255 {
-				magB = 255
-			}
-
-			out.Pix[outIdx] = uint8(magR)
-			out.Pix[outIdx+1] = uint8(magG)
-			out.Pix[outIdx+2] = uint8(magB)
+			outIdx := (y-bounds.Min.Y)*stride + (x-bounds.Min.X)*4
+			out.Pix[outIdx] = val
+			out.Pix[outIdx+1] = val
+			out.Pix[outIdx+2] = val
 			out.Pix[outIdx+3] = 255
 		}
 		wg.Done()

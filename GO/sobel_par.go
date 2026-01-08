@@ -6,7 +6,6 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	"os"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -17,7 +16,6 @@ type Job struct {
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// 1. Charger l'image
 	file, err := os.Open("images/heic1501a.jpg")
@@ -39,15 +37,15 @@ func main() {
 
 	t0 := time.Now()
 	// 3. Lancer le traitement parallèle avec Worker Pool
-	numWorkers := 1
+	numWorkers := 8
 	SobelWorkerPool(srcRGBA, outRGBA, numWorkers)
 	t1 := time.Now()
 
 	// 4. Sauvegarde
-	savePNG("out.png", outRGBA)
+	savePNG("images/out.png", outRGBA)
 	t2 := time.Now()
 	println("Traitement terminé : out.png")
-	println("Temps de calcul : ", t1.Sub(t0))
+	println("Temps de calcul    : ", t1.Sub(t0))
 	println("Temps de sauvegarde :", t2.Sub(t1))
 }
 

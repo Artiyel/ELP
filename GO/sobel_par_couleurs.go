@@ -1,11 +1,13 @@
 package main
 
 import (
+	"flag"
 	"image"
 	"image/draw"
 	_ "image/jpeg"
 	"image/png"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -17,8 +19,13 @@ type Job struct {
 
 func main() {
 
+	numWorkers := flag.Int("n", runtime.NumCPU(), "Nombre de workers")
+	sauvegarde := flag.Bool("s", true, "Active ou non la sauvegarde du fichier résultant")
+	path := flag.String("f", "images/Marmite_UMARY_WM-94.jpg", "Précise l'emplacement de l'image a traiter (Présente dans un dossier 'images'")
+	flag.Parse()
+
 	// 1. Charger l'image
-	file, err := os.Open("images/heic1501a.jpg")
+	file, err := os.Open(*path)
 	if err != nil {
 		panic(err)
 	}
@@ -37,16 +44,17 @@ func main() {
 
 	t0 := time.Now()
 	// 3. Lancer le traitement parallèle avec Worker Pool
-	numWorkers := 8
-	SobelWorkerPool(srcRGBA, outRGBA, numWorkers)
+	SobelWorkerPool(srcRGBA, outRGBA, *numWorkers)
 	t1 := time.Now()
-
-	// 4. Sauvegarde
-	savePNG("images/out.png", outRGBA)
-	t2 := time.Now()
-	println("Traitement terminé : out.png")
 	println("Temps de calcul    : ", t1.Sub(t0))
-	println("Temps de sauvegarde :", t2.Sub(t1))
+	if *sauvegarde {
+		// 4. Sauvegarde
+		savePNG("images/out_couleur.png", outRGBA)
+		t2 := time.Now()
+		println("Temps de sauvegarde :", t2.Sub(t1))
+	}
+	println("Traitement terminé")
+
 }
 
 func SobelWorkerPool(src *image.RGBA, out *image.RGBA, numWorkers int) {

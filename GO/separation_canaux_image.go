@@ -103,12 +103,13 @@ func main() {
 
 	numWorkers := flag.Int("n", runtime.NumCPU(), "Nombre de workers")
 	sauvegarde := flag.Bool("s", true, "Active ou non la sauvegarde du fichier résultant")
+	path := flag.String("f", "images/Marmite_UMARY_WM-94.jpg", "Précise l'emplacement de l'image a traiter (Présente dans un dossier 'images'")
 	flag.Parse()
 
 	println("Nombre de workers:", *numWorkers)
 
 	// Ouvrir l'image
-	file, err := os.Open("images/heic1509a.jpg")
+	file, err := os.Open(*path)
 	if err != nil {
 		panic(err)
 	}
@@ -135,9 +136,9 @@ func main() {
 		t1 := time.Now()
 		var wg sync.WaitGroup
 		wg.Add(3)
-		go func() { savePNG("images/red.png", rImg); wg.Done() }()
-		go func() { savePNG("images/green.png", gImg); wg.Done() }()
-		go func() { savePNG("images/blue.png", bImg); wg.Done() }()
+		go func() { savePNG("images/out_red.png", rImg); wg.Done() }()
+		go func() { savePNG("images/out_green.png", gImg); wg.Done() }()
+		go func() { savePNG("images/out_blue.png", bImg); wg.Done() }()
 		wg.Wait()
 		println("temps de sauvegarde : ", time.Now().Sub(t1)/1000000, "ms")
 	}

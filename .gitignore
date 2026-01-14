@@ -20,3 +20,6 @@
 # Icônes
 *.ico
 *.icns
+
+#les conneries d'elm
+\elm-stuff

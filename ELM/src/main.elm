@@ -7,6 +7,8 @@ import Html.Events exposing (onInput)
 import Html.Events exposing (onClick)
 import Http
 
+import Fetch_def exposing (getdef, Msg_2(..))
+
 
 
 -- MAIN
@@ -29,22 +31,23 @@ type alias Model =
     input : String,
     mot : String,
     affichersolu : Bool,
-    totalmots : String
+    totalmots : String,
+    def : String
   }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
+    let
+        motChoisi = "below"
+    in
     ( { title = "Guess It!"
       , input = ""
-      , mot = ""
+      , mot = motChoisi
       , affichersolu = False
+      , def = ""
       , totalmots = ""
-      }
-    , Http.get 
-        { url = "/static/thousand_words_things_explainer.txt"
-        , expect = Http.expectString GotText 
-        }
+      }, Cmd.map FetchMsg (getdef motChoisi) 
     )
 
 
@@ -52,22 +55,51 @@ init _ =
 -- UPDATE
 
 
-type Msg = Change String | Afficher | GotText (Result Http.Error String)
+type Msg = Change String | Afficher | FetchMsg Fetch_def.Msg_2 --| GotText (Result Http.Error String) |
   
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+    {-
         GotText (Ok texte) ->
-            ( { model | totalmots = texte }, Cmd.none )
-        GotText (Err texte) ->
-            ( { model | totalmots = "Erreur de chargement" }, Cmd.none )
+            let 
+                motChoisi = "below" 
+            in
+            ( { model | mot = motChoisi }
+            , Cmd.map GotDef (getdef motChoisi)
+            )
+        
+        GotText (Err error) ->
+            ( { model | totalmots = "Erreur de chargement du fichier" }, Cmd.none )
+      -}
+
+        FetchMsg result ->
+                    case result of
+                        Ok listeDefinitions ->
+                            let 
+                                premierMot = List.head listeDefinitions 
+                                texteAAfficher = 
+                                    case premierMot of
+                                        Just d -> String.join ", " d.definitions
+                                        Nothing -> "Aucune définition trouvée"
+                            in
+                            ( { model | def = texteAAfficher }, Cmd.none )
+
+                        Err _ ->
+                            ( { model | def = "Erreur HTTP" }, Cmd.none )
+
 
         Change newContent ->
             ( { model | input = newContent }, Cmd.none )
           
         Afficher -> 
             ( { model | affichersolu = True }, Cmd.none )
+          
+  
+        
+  
+
         
 
     
@@ -88,6 +120,9 @@ view model =
         style "font-size" "40px", 
         style "margin-left" "550px" ] 
        [ text model.title ],
+  div [style "margin-bottom" "20px", 
+       style "margin-left" "560px"] 
+      [ text model.def],
   div [style "margin-bottom" "20px", 
        style "margin-left" "540px"] 
       [input [ placeholder "Try to guess the word...", value model.input, onInput Change ][]],

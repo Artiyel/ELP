@@ -3,7 +3,7 @@ module Fetch_def exposing (..)
 import Http
 import Json.Decode exposing (Decoder, map3, map, field, string, list)
 
-type Msg = Trouvé (Result Http.Error (List Definition)) | Rien
+type Msg_2 = Trouvé (Result Http.Error (List Definition)) | Rien
 
 type alias Definition =
   { mot : String
@@ -12,7 +12,7 @@ type alias Definition =
   }
 
 
-getdef : String -> Cmd Msg
+getdef : String -> Cmd Msg_2
 getdef mot =
   Http.get
     { url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ mot

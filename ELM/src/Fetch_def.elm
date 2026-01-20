@@ -1,48 +1,59 @@
-module Fetch_def exposing (..)
+module Fetch_def exposing (getDef)
 
 import Http
-import Json.Decode exposing (Decoder, map3, map, field, string, list)
-
-type Msg = Trouvé (Result Http.Error (List Definition)) | Rien
-
-type alias Definition =
-  { mot : String
-  , definitions : List String
-  , prononciation : String
-  }
+import Json.Decode exposing (Decoder, map2, map3, field, string, list)
+import List exposing (sortBy)
 
 
-getdef : String -> Cmd Msg
-getdef mot =
-  Http.get
-    { url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ mot
-    , expect = Http.expectJson Trouvé definitionsDecoder
+-- MESSAGES
+type Msg
+    = Trouvé (Result Http.Error (List Definition))
+    | Rien
+
+
+-- TYPES
+type alias Meaning =
+    { partOfSpeech : String
+    , definitions : List String
     }
 
+type alias Definition =
+    { mot : String
+    , meanings : List Meaning
+    , prononciation : String
+    }
+
+
+-- COMMANDE HTTP
+getDef : String -> Cmd Msg
+getDef mot =
+    Http.get
+        { url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ mot
+        , expect = Http.expectJson Trouvé definitionsDecoder
+        }
+
+
+-- DECODERS
 definitionTextDecoder : Decoder String
 definitionTextDecoder =
-  field "definition" string
+    field "definition" string
 
 
-meaningDefinitionsDecoder : Decoder (List String)
-meaningDefinitionsDecoder =
-  field "definitions" (list definitionTextDecoder)
-
-
-allDefinitionsDecoder : Decoder (List String)
-allDefinitionsDecoder =
-  field "meanings" (list meaningDefinitionsDecoder)
-    |> map List.concat
+meaningDecoder : Decoder Meaning
+meaningDecoder =
+    map2 Meaning
+        (field "partOfSpeech" string)
+        (field "definitions" (list definitionTextDecoder))
 
 
 definitionDecoder : Decoder Definition
 definitionDecoder =
-  map3 Definition
-    (field "word" string)
-    allDefinitionsDecoder
-    (field "phonetic" string)
+    map3 Definition
+        (field "word" string)
+        (field "meanings" (list meaningDecoder) |> map (List.sortBy .partOfSpeech))
+        (field "phonetic" string)
 
 
 definitionsDecoder : Decoder (List Definition)
 definitionsDecoder =
-  list definitionDecoder
+    list definitionDecoder

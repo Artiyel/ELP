@@ -1,7 +1,7 @@
 module Fetch_def exposing (getDef)
 
 import Http
-import Json.Decode exposing (Decoder, map2, map3, field, string, list)
+import Json.Decode exposing (Decoder, map2, map3, map, field, string, list)
 import List exposing (sortBy)
 
 

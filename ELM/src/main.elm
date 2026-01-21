@@ -32,7 +32,7 @@ type alias Model =
     mot : String,
     affichersolu : Bool,
     totalmots : String,
-    def : String
+    def : List String
   }
 
 
@@ -45,7 +45,7 @@ init _ =
       , input = ""
       , mot = motChoisi
       , affichersolu = False
-      , def = ""
+      , def = []
       , totalmots = ""
       }, Cmd.map FetchMsg (getdef motChoisi) 
     )
@@ -55,7 +55,7 @@ init _ =
 -- UPDATE
 
 
-type Msg = Change String | Afficher | FetchMsg Fetch_def.Msg_2 --| GotText (Result Http.Error String) |
+type Msg = Change String | Afficher | FetchMsg Msg_2 --| GotText (Result Http.Error String) |
   
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -74,20 +74,27 @@ update msg model =
             ( { model | totalmots = "Erreur de chargement du fichier" }, Cmd.none )
       -}
 
-        FetchMsg result ->
-                    case result of
-                        Ok listeDefinitions ->
-                            let 
-                                premierMot = List.head listeDefinitions 
-                                texteAAfficher = 
-                                    case premierMot of
-                                        Just d -> String.join ", " d.definitions
-                                        Nothing -> "Aucune définition trouvée"
-                            in
-                            ( { model | def = texteAAfficher }, Cmd.none )
+        FetchMsg subMsg ->
+                    case subMsg of
+                        Trouvé result -> 
+                            case result of 
+                                Ok listeDefinitions ->
+                                    let
+                                        toutesLesDefs = 
+                                            case List.head listeDefinitions of
+                                                Just d -> 
+                                                    -- On récupère la liste de définitions de chaque "meaning" 
+                                                    -- et on les fusionne en une seule grande liste
+                                                    List.concatMap .definitions d.meanings
 
-                        Err _ ->
-                            ( { model | def = "Erreur HTTP" }, Cmd.none )
+                                                Nothing -> []
+                                    in
+                                    ( { model | def = toutesLesDefs }, Cmd.none )
+
+                                Err _ ->
+                                    ( { model | def = [] }, Cmd.none )
+                        Rien -> -- Cas où le message de Fetch_def est 'Rien'
+                            ( { model | def = [] }, Cmd.none )
 
 
         Change newContent ->
@@ -120,9 +127,9 @@ view model =
         style "font-size" "40px", 
         style "margin-left" "550px" ] 
        [ text model.title ],
-  div [style "margin-bottom" "20px", 
-       style "margin-left" "560px"] 
-      [ text model.def],
+  div [style "margin-bottom" "40px", 
+       style "margin-left" "100px"] 
+      [ ul [] (List.map afficherLigne model.def)],
   div [style "margin-bottom" "20px", 
        style "margin-left" "540px"] 
       [input [ placeholder "Try to guess the word...", value model.input, onInput Change ][]],
@@ -132,3 +139,6 @@ view model =
   ]
   
   
+afficherLigne : String -> Html Msg
+afficherLigne texteDef =
+    li [ style "margin-bottom" "10px" ] [ text texteDef ]

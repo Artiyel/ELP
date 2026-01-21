@@ -6,8 +6,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Html.Events exposing (onClick)
 import Http
-
+import Random
 import Fetch_def exposing (getdef, Msg_2(..))
+import Choose exposing (..)
+import Compare exposing (..)
 
 
 
@@ -32,47 +34,49 @@ type alias Model =
     mot : String,
     affichersolu : Bool,
     totalmots : String,
-    def : List String
+    def : List String,
+    seed : Random.Seed,
+    reponse : Int
   }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        motChoisi = "below"
-    in
     ( { title = "Guess It!"
       , input = ""
-      , mot = motChoisi
+      , mot = ""
       , affichersolu = False
       , def = []
       , totalmots = ""
-      }, Cmd.map FetchMsg (getdef motChoisi) 
+      , seed = Random.initialSeed 12
+      , reponse = 0
+      }, Http.get 
+        { url = "/static/thousand_words_things_explainer.txt"
+        , expect = Http.expectString GotText 
+        }
     )
-
 
 
 -- UPDATE
 
 
-type Msg = Change String | Afficher | FetchMsg Msg_2 --| GotText (Result Http.Error String) |
+type Msg = Change String | Afficher | FetchMsg Msg_2 | GotText (Result Http.Error String) | Reponse Int
   
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-    {-
+    
         GotText (Ok texte) ->
             let 
-                motChoisi = "below" 
+                ( motChoisi, nextSeed ) = Choose.choose texte model.seed
             in
-            ( { model | mot = motChoisi }
-            , Cmd.map GotDef (getdef motChoisi)
+            ( { model | mot = motChoisi, seed = nextSeed }
+            , Cmd.map FetchMsg (getdef motChoisi) 
             )
-        
-        GotText (Err error) ->
-            ( { model | totalmots = "Erreur de chargement du fichier" }, Cmd.none )
-      -}
+
+        GotText (Err _) ->
+            ( { model | totalmots = "Erreur de chargement" }, Cmd.none )
 
         FetchMsg subMsg ->
                     case subMsg of
@@ -102,13 +106,13 @@ update msg model =
           
         Afficher -> 
             ( { model | affichersolu = True }, Cmd.none )
+
+        Reponse reponse ->
+            if Compare.isTheSame model.input model.mot == 1 then  
+                ( { model | reponse = 1}, Cmd.none )
+            else 
+                ( { model | reponse = 0}, Cmd.none )
           
-  
-        
-  
-
-        
-
     
 -- SUB 
 
@@ -125,18 +129,38 @@ view model =
   div[]
   [div [style "margin-bottom" "40px", 
         style "font-size" "40px", 
-        style "margin-left" "550px" ] 
+        style "text-align" "center" ] 
        [ text model.title ],
+  viewSolu model, 
   div [style "margin-bottom" "40px", 
        style "margin-left" "100px"] 
       [ ul [] (List.map afficherLigne model.def)],
   div [style "margin-bottom" "20px", 
-       style "margin-left" "540px"] 
+       style "text-align" "center"] 
       [input [ placeholder "Try to guess the word...", value model.input, onInput Change ][]],
   div [style "margin-bottom" "20px", 
-       style "margin-left" "560px"] 
-      [button [ onClick Afficher ] [ text "Afficher la solution" ]]
+       style "text-align" "center"] 
+      [button [ onClick Afficher ] [ text "Afficher la solution" ]],
+  viewValidation model
   ]
+
+viewValidation : Model -> Html Msg
+viewValidation model =
+    if model.input == "" then
+        text "" 
+    else if Compare.isTheSame model.input model.mot == 1 then 
+        div [ style "color" "green", style "text-align" "center" ] [ text "Bravo, vous avez trouvé le mot !" ]
+    else 
+        div [ style "color" "red", style "text-align" "center" ] [ text "Ce n'est pas le bon mot..." ]
+
+
+viewSolu : Model -> Html Msg
+viewSolu model =
+  if model.affichersolu == True then 
+    div [ style "margin-left" "100px", style "font-size" "30px" ] [ text model.mot]
+
+  else
+    div [ style "color" "green" ] [ text ""]
   
   
 afficherLigne : String -> Html Msg

@@ -7,6 +7,7 @@ import Html.Events exposing (onInput)
 import Html.Events exposing (onClick)
 import Http
 import Random
+import Array
 import Fetch_def exposing (getdef, Msg_2(..))
 import Choose exposing (..)
 import Compare exposing (..)
@@ -35,7 +36,6 @@ type alias Model =
     affichersolu : Bool,
     totalmots : String,
     def : List String,
-    seed : Random.Seed,
     reponse : Int
   }
 
@@ -48,7 +48,6 @@ init _ =
       , affichersolu = False
       , def = []
       , totalmots = ""
-      , seed = Random.initialSeed 12
       , reponse = 0
       }, Http.get 
         { url = "/static/thousand_words_things_explainer.txt"
@@ -60,7 +59,7 @@ init _ =
 -- UPDATE
 
 
-type Msg = Change String | Afficher | FetchMsg Msg_2 | GotText (Result Http.Error String) | Reponse Int
+type Msg = Change String | Afficher | FetchMsg Msg_2 | GotText (Result Http.Error String) | Reponse Int | NewIndex Int
   
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,15 +67,21 @@ update msg model =
     case msg of
     
         GotText (Ok texte) ->
-            let 
-                ( motChoisi, nextSeed ) = Choose.choose texte model.seed
-            in
-            ( { model | mot = motChoisi, seed = nextSeed }
-            , Cmd.map FetchMsg (getdef motChoisi) 
+            ( { model | totalmots = texte }
+            , Random.generate NewIndex (Choose.choose texte)
             )
 
         GotText (Err _) ->
-            ( { model | totalmots = "Erreur de chargement" }, Cmd.none )
+            ( { model | totalmots = "Erreur de chargement" }, Cmd.none ) 
+            
+        NewIndex index ->
+            let 
+                indexesArray = Array.fromList (String.indexes " " model.totalmots)
+                motChoisi = Choose.readWord model.totalmots indexesArray index
+            in
+            ( { model | mot = motChoisi }
+            , Cmd.map FetchMsg (getdef motChoisi)
+            )
 
         FetchMsg subMsg ->
                     case subMsg of

@@ -1,20 +1,16 @@
-module Fetch_def exposing (getDef)
+module Fetch_def exposing (getdef, Msg_2(..), Definition)
 
 import Http
 import Json.Decode exposing (Decoder, map2, map3, map, field, string, list)
-import List exposing (sortBy)
+
+type Msg_2 = Trouvé (Result Http.Error (List Definition)) | Rien
 
 
--- MESSAGES
-type Msg
-    = Trouvé (Result Http.Error (List Definition))
-    | Rien
-
-
--- TYPES
-type alias Meaning =
-    { partOfSpeech : String
-    , definitions : List String
+getdef : String -> Cmd Msg_2
+getdef mot =
+  Http.get
+    { url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ mot
+    , expect = Http.expectJson Trouvé definitionsDecoder
     }
 
 type alias Definition =
@@ -23,9 +19,14 @@ type alias Definition =
     , prononciation : String
     }
 
+type alias Meaning =
+    { partOfSpeech : String
+    , definitions : List String
+    }
+
 
 -- COMMANDE HTTP
-getDef : String -> Cmd Msg
+getDef : String -> Cmd Msg_2
 getDef mot =
     Http.get
         { url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ mot

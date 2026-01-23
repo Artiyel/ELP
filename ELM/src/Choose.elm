@@ -3,16 +3,13 @@ import Random
 import Array
 import String
 
-test text =
-    let seed = Random.initialSeed 12
-    in choose text seed
 
-choose text seed =
+choose : String -> Random.Generator Int
+choose text =
     let 
-        ( index, nextSeed ) =
-            Random.step (Random.int 0 1000) seed
+        maxIndex = (List.length (String.indexes " " text)) - 1
     in
-        (readWord text (Array.fromList (String.indexes " " text)) index , nextSeed)
+    Random.int 0 maxIndex
 
 readWord text indexes index =
     let 

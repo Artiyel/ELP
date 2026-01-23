@@ -26,3 +26,8 @@ chaque joueur prend une carte, si cette carte est une action elle est executée 
 Le Score total est la somme des Cartes, multiplié par un éventuel multiplicateur, additionné aux éventuels points bonus, auquel s'ajoutent 15 en cas de victoire par flip7
 
 Points Joueur += (sommes des cartes) * (multiplicateurs) + (points bonus) + (flip7)
+
+# TO DO
+* rajouter le fichier de log
+* rajouter "IA" de comptage de carte
+* Stats ? (pourcentage de type de carte tirée, nb de flip7 sur la partie, personne qui a le plus été éliminé, durée moyenne d'une manche/tour )

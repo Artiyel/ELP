@@ -6,13 +6,11 @@ Ce dépôt regroupe les trois projets réalisés dans le cadre d'ELP. Chaque ré
 
 Situé dans le répertoire **`GO`**.
 
----
 
 ## ELM : Guess It!
 
 Situé dans le répertoire **`ELM`**.
 
---- 
 
 ## JS : Flip7
 

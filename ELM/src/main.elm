@@ -59,7 +59,13 @@ init _ =
 -- UPDATE
 
 
-type Msg = Change String | Afficher | FetchMsg Msg_2 | GotText (Result Http.Error String) | Reponse Int | NewIndex Int
+type Msg = Change String 
+        | Afficher 
+        | FetchMsg Msg_2 
+        | GotText (Result Http.Error String) 
+        | Reponse Int 
+        | NewIndex Int 
+        | NouveauMot
   
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -117,6 +123,16 @@ update msg model =
                 ( { model | reponse = 1}, Cmd.none )
             else 
                 ( { model | reponse = 0}, Cmd.none )
+        
+        NouveauMot ->
+            ( { model
+                | input = ""
+                , affichersolu = False
+                , def = []
+                , reponse = 0
+            }
+            , Random.generate NewIndex (Choose.choose model.totalmots)
+            )
           
     
 -- SUB 
@@ -140,13 +156,17 @@ view model =
   div [style "margin-bottom" "40px", 
        style "margin-left" "100px"] 
       [ ul [] (List.map afficherLigne model.def)],
-  div [style "margin-bottom" "20px", 
+  div [style "margin-bottom" "10px", 
        style "text-align" "center"] 
       [input [ placeholder "Try to guess the word...", value model.input, onInput Change ][]],
+  viewValidation model,
   div [style "margin-bottom" "20px", 
        style "text-align" "center"] 
-      [button [ onClick Afficher ] [ text "Afficher la solution" ]],
-  viewValidation model
+      [button [ onClick Afficher ] [ text "Show the solution" ]],
+  div [style "position" "fixed",
+       style "bottom" "20px",
+       style "right" "20px"] 
+      [button [ onClick NouveauMot ] [ text "New word !" ]]
   ]
 
 viewValidation : Model -> Html Msg
@@ -154,9 +174,9 @@ viewValidation model =
     if model.input == "" then
         text "" 
     else if Compare.isTheSame model.input model.mot == 1 then 
-        div [ style "color" "green", style "text-align" "center" ] [ text "Bravo, vous avez trouvé le mot !" ]
+        div [ style "color" "green", style "text-align" "center", style "margin-bottom" "10px" ] [ text "Congrats, you're right !" ]
     else 
-        div [ style "color" "red", style "text-align" "center" ] [ text "Ce n'est pas le bon mot..." ]
+        div [ style "color" "red", style "text-align" "center", style "margin-bottom" "10px"] [ text "This is not the right word..." ]
 
 
 viewSolu : Model -> Html Msg

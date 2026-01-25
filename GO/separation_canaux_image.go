@@ -19,15 +19,19 @@ type Job struct {
 
 // Worker pool pour séparer les canaux de couleur
 func worker(rgba, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGroup) {
-	defer wg.Done()
+	defer wg.Done() // signale la fin du worker
 	bounds := rgba.Bounds()
-	stride := rgba.Stride
+	stride := rgba.Stride // nombre d’octets par ligne
 
+	// Lecture des jobs jusqu’à fermeture du canal
 	for job := range jobs {
+		// Parcours des lignes du bloc
 		for y := job.yStart; y < job.yEnd; y++ {
 			rowOffset := (y - bounds.Min.Y) * stride
+			// Parcours des pixels de la ligne
 			for x := bounds.Min.X; x < bounds.Max.X; x++ {
 				i := rowOffset + (x-bounds.Min.X)*4
+				// Lecture des composantes RGB
 				r := rgba.Pix[i]
 				g := rgba.Pix[i+1]
 				b := rgba.Pix[i+2]
@@ -51,14 +55,15 @@ func worker(rgba, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGr
 				bImg.Pix[i+3] = 255
 			}
 		}
+		// Signale la fin d’un job
 		wg.Done()
 	}
 }
 
-// SplitChannelsWorkerPool utilise un worker pool
+// SplitChannelsWorkerPool sépare les canaux RGB via un worker pool
 func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers, blockSize int) (*image.RGBA, *image.RGBA, *image.RGBA) {
-	bounds := rgba.Bounds()
-
+	bounds := rgba.Bounds() // Délimite l’image
+	// Création des images résultat
 	rImg := image.NewRGBA(bounds)
 	gImg := image.NewRGBA(bounds)
 	bImg := image.NewRGBA(bounds)
@@ -66,7 +71,7 @@ func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers, blockSize int) (*imag
 	jobs := make(chan Job, numWorkers*2) // buffer pour éviter blocage
 
 	var wg sync.WaitGroup
-	wg.Add(numWorkers)
+	wg.Add(numWorkers) // attente de la fin des workers
 
 	// Lancer les workers
 	for i := 0; i < numWorkers; i++ {
@@ -79,12 +84,12 @@ func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers, blockSize int) (*imag
 		if yEnd > bounds.Max.Y {
 			yEnd = bounds.Max.Y
 		}
-		wg.Add(1)
+		wg.Add(1) // un job supplémentaire à attendre
 		jobs <- Job{yStart: y, yEnd: yEnd}
 	}
 
-	close(jobs)
-	wg.Wait()
+	close(jobs) // plus aucun job à envoyer
+	wg.Wait()   // attente de tous les workers + jobs
 
 	return rImg, gImg, bImg
 }
@@ -101,6 +106,7 @@ func savePNG(filename string, img image.Image) {
 
 func main() {
 
+	// Arguments CLI
 	numWorkers := flag.Int("n", runtime.NumCPU(), "Nombre de workers")
 	sauvegarde := flag.Bool("s", true, "Active ou non la sauvegarde du fichier résultant")
 	path := flag.String("f", "images/Marmite_UMARY_WM-94.jpg", "Précise l'emplacement de l'image a traiter (Présente dans un dossier 'images'")
@@ -115,6 +121,7 @@ func main() {
 	}
 	defer file.Close()
 
+	// Décodage de l’image
 	img, format, err := image.Decode(file)
 	if err != nil {
 		panic(err)

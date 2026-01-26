@@ -49,12 +49,12 @@ func main() {
 	// Traitement Sobel parallèle via worker pool
 	SobelWorkerPool(srcRGBA, outRGBA, *numWorkers)
 	t1 := time.Now()
-	println("Temps de calcul    : ", t1.Sub(t0))
+	println("Temps de calcul    : ", t1.Sub(t0)/1000000, "ms")
 	if *sauvegarde {
 		// Sauvegarde
 		savePNG("images/out_gris.png", outRGBA)
 		t2 := time.Now()
-		println("Temps de sauvegarde :", t2.Sub(t1))
+		println("Temps de sauvegarde :", t2.Sub(t1)/1000000, "ms")
 	}
 	println("Traitement terminé")
 

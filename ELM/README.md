@@ -35,7 +35,7 @@ Il assemble les pièces selon l'architecture Elm :
 
 ---
 
-## Installation et Lancement
+## Installation et lancement
 
 1. Assurez-vous d'avoir installé **Elm**.
 2. Entrez la commande suivante dans le terminal depuis le répertoire racine `ELM` :

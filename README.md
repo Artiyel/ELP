@@ -1,10 +1,17 @@
-# PROJET ELP
-hoooooo~~~~~~
-## Partie GO
-on fait un filtre de detection de bordure, si on a le temps on implémentera d'autre types de filtres...
+# Projet ELP - Écosystème des langages de programmation
 
-## Partie JS
-Has his own readme
+Ce dépôt regroupe les trois projets réalisés dans le cadre d'ELP. Chaque répertoire explore un langage de programmation différent.
 
-## Partie ELM
-Has his own readme
+## GO : Traitement d'image parallèle
+
+Situé dans le répertoire **`GO`**.
+
+
+## ELM : Guess It!
+
+Situé dans le répertoire **`ELM`**.
+
+
+## JS : Flip7
+
+Situé dans le répertoire **`JS`**.

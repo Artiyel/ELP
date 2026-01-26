@@ -31,7 +31,7 @@ type alias Meaning =
     }
 
 
--- DECODERS
+-- DECODERS dans "l'ordre" d'appel
 -- Les decoders transforment le JSON de l’API en types Elm
 
 -- Decoder pour une définition simple (texte)

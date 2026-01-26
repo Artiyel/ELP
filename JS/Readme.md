@@ -8,8 +8,8 @@ chaque joueur prend une carte, si cette carte est une action elle est executée 
     * si "hit" donner une carte au joueur, si elle est unique, le joueur rejoue au tour suivant, sinon, il perd instantanément
     * si "stay" le joueur passe son tour sans prendre de carte
 1. la manche se finit si un joueur a 7 cartes distinctes dans son jeu (flip7) ou si tout les autres joueurs sonts éliminés
-1. les joueurs calculent leurs points a la fin de chaque manches (cf Score)
-1. le jeu se continue avec d'autres manches tant que personne n'a 200 points
+2. les joueurs calculent leurs points a la fin de chaque manches (cf Score)
+3. le jeu se continue avec d'autres manches tant que personne n'a 200 points
 
 ## Cartes
 * Cartes normales : 12 douzes, 11 onzes, 10 dix, ...., 1 un et 1 zéro
@@ -23,11 +23,10 @@ chaque joueur prend une carte, si cette carte est une action elle est executée 
         * Carte "x" : score des cartes multiplié
 
 ## Score
-Le Score total est la somme des Cartes, multiplié par un éventuel multiplicateur, additionné aux éventuels points bonus, auquel s'ajoutent 15 en cas de victoire par flip7
-
+Le Score total est la somme des Cartes, multiplié par un éventuel multiplicateur, additionné aux éventuels points bonus, auquel s'ajoutent 15 en cas de victoire par flip7  
 Points Joueur += (sommes des cartes) * (multiplicateurs) + (points bonus) + (flip7)
 
 # TO DO
-* rajouter le fichier de log
-* rajouter "IA" de comptage de carte
-* Stats ? (pourcentage de type de carte tirée, nb de flip7 sur la partie, personne qui a le plus été éliminé, durée moyenne d'une manche/tour )
+- [ ] rajouter le fichier de log (Matin)
+- [ ] rajouter "IA" de comptage de carte  
+- [ ] Stats ? (pourcentage de type de carte tirée, nb de flip7 sur la partie, personne qui a le plus été éliminé, durée moyenne d'une manche/tour )

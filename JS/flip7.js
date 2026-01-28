@@ -50,7 +50,6 @@ async function main() {
         }
       logline += player.score; // le score du joueur
       logtxt += Date().concat(logline,"\n")
-      console.log(logline);
       if (game.endOfRound()) break;
     }
 

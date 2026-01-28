@@ -28,7 +28,7 @@ Points Joueur += (sommes des cartes) * (multiplicateurs) + (points bonus) + (fli
 
 # TO DO
 - [ ] rajouter le fichier de log (Matin)
-- [ ] rajouter "IA" de comptage de carte 
+- [x] rajouter "IA" de comptage de carte 
   - [x] --> renvoie la carte la plus probable de sortir 
     - [x] regarder toute les cartes dans le jeu
     - [x] compter chaque cartes encore présentes

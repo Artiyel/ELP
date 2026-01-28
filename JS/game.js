@@ -28,7 +28,6 @@ class Game {
 
   initDeck() {
     this.deck = [];
-    console.trace("INIT DECK CALLED");
 
     for (let i = 0; i <= 12; i++) {
       let count = 12 - i + 1;
@@ -59,11 +58,6 @@ class Game {
     }
 
     const card = this.deck.pop();
-    console.log(
-    "DECK:", this.deck.length,
-    "DISCARD:", this.discard.length,
-    "TOTAL:", this.deck.length + this.discard.length
-  );
     return card;
   }
 

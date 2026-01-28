@@ -15,33 +15,33 @@ class Controller {
     // ----- CARTES NORMALES -----
     if (typeof card === "number") {
       this.handleNumberCard(player, card);
-      return;
+      return card;
     }
 
     // ----- BONUS -----
     if (card === "+" || card === "x") {
       player.cards.push(card);
       this.game.logAction(`${player.name} keeps bonus ${card}`);
-      return;
+      return card;
     }
 
     // ----- ACTIONS -----
     if (card === "secondChance") {
       this.applySecondChance(player);
       this.game.discard.push(card);
-      return;
+      return card;
     }
 
     if (card === "freeze") {
       this.applyFreeze(player);
       this.game.discard.push(card);
-      return;
+      return; card
     }
 
     if (card === "flip3") {
       this.handleFlip3(player);
       this.game.discard.push(card);
-      return;
+      return card;
     }
   }
 

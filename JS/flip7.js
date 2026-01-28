@@ -47,7 +47,7 @@ async function main() {
       if (player.status !== "active") continue;
 
       console.log(`\n ${player.name}'s turn (score: ${player.score})`);
-      const action = readlineSync.keyIn(`Press [Space] to HIT, [f] to STAY, [q] to QUIT : `, {limit: " fq"}); // on fait jouer le joueur 
+      const action = readlineSync.keyIn(`Press [Space] to HIT, [f] to STAY, [q] to QUIT , [h] for AI help :`, {limit: " fqh"}); // on fait jouer le joueur 
       if (action === " ") { // si le joueur HIT
         logline += game.controller.hit(player); // on récupère la carte tirée
         logline += ', hit, ';
@@ -62,7 +62,12 @@ async function main() {
         createlog(logtxt)
 
         process.exit(0); // 0 = succès
-        }
+      }
+      else if (action === "h") {//si on décide de demander l'aide de l'ia
+        game.is_beneficial(player)
+        i=i-1 // le joueur rejoue car il a rien fait ce tour
+        
+      }
       logline += player.score; // le score du joueur
       logtxt += Date().concat(logline,"\n")
       if (game.endOfRound()) break;

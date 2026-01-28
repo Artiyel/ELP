@@ -52,8 +52,6 @@ async function main() {
         p.cards = [];
         p.secondChance = false;
       });
-      game.initDeck();
-      game.shuffleDeck();
     }
   }
 }

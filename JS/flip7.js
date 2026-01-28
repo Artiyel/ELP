@@ -2,6 +2,21 @@
 
 const readlineSync = require("readline-sync"); // pour lire les entrées clavier
 const Game = require("./game"); //on va chercher game.js
+const fs = require('node:fs');
+
+async function createlog(content){
+   // On enregistre les logs      
+  let date = new Date
+  try {
+      fs.writeFileSync('logs/log_'.concat(date.getHours(),date.getMinutes(),date.getSeconds()), content);
+            // file written successfully
+      } catch (err) {
+      console.error(err);
+      }
+
+
+
+}
 
 async function main() {
   // fonction qui fait tourner le jeu 
@@ -44,7 +59,8 @@ async function main() {
         logline += "game closed";
         logtxt += Date().concat(logline,"\n")
         console.log("Bye !");
-        console.log(logtxt);
+        createlog(logtxt)
+
         process.exit(0); // 0 = succès
         }
       logline += player.score; // le score du joueur
@@ -58,7 +74,7 @@ async function main() {
       game.players.forEach(p => console.log(`${p.name}: ${p.score} points`)); // on affiche leurs scores
       if (game.checkForWinner()) { // si un joueur a atteint 200 points 
         console.log("Fin de la partie !"); 
-        console.log(logtxt);
+        createlog(logtxt)
         process.exit(0); // quitte Node.js proprement
     }
 

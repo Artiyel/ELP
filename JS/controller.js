@@ -14,20 +14,20 @@ class Controller {
 
 
     if (typeof card === "number") {
-      this.handleNumberCard(player, card); // si c'est un nombre
+      this.handleNumberCard(player, card);
       return;
     }
 
     if (card === "+" || card === "x") {
-      player.cards.push(card); // la carte est gardée par le joueur
-      this.game.logAction(`${player.name} keeps bonus ${card}`); // si c'est un bonus
+      player.cards.push(card);
+      this.game.logAction(`${player.name} keeps bonus ${card}`);
       return;
     }
 
 
     if (card === "secondChance") {
-      this.applySecondChance(player); // si c'est une second chance
-      this.game.discard.push(card); // la carte est mise dans la défausse car utilisée directement
+      this.applySecondChance(player);
+      this.game.discard.push(card);
       return;
     }
 

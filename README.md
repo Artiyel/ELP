@@ -4,14 +4,14 @@ Ce dépôt regroupe les trois projets réalisés dans le cadre d'ELP. Chaque ré
 
 ## GO : Traitement d'image parallèle
 
-Situé dans le répertoire **`GO`**.
+Situé dans le répertoire **`\GO`**.
 
 
 ## ELM : Guess It!
 
-Situé dans le répertoire **`ELM`**.
+Situé dans le répertoire **`\ELM`**.
 
 
 ## JS : Flip7
 
-Situé dans le répertoire **`JS`**.
+Situé dans le répertoire **`\JS`**.

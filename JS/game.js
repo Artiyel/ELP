@@ -1,6 +1,6 @@
 "use strict";
 
-const Controller = require("./controller");
+const Controller = require("./controller"); // on va chercher controller.js
 
 class Game {
   constructor() {

@@ -63,12 +63,29 @@ class Game {
   }
 
   predict() {
-    cartes_qui_restent=[]
+    let cartes_qui_restent = [1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    let nb_carte_en_jeu = 94
+    let liste_proba=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for (var i = 0; i < this.deck.length; i++){
-      for (var j = 0; i < 12; j++){
-        if j === this.deck[i]:
+      for (var j = 0; j < 13; j++){
+        if (j === this.deck[i]) {
+          cartes_qui_restent[j]-=1
+        }
+      }
+      nb_carte_en_jeu -= 1
+    }
+    for (var j = 0; j < 13; j++){
+        liste_proba[j]= cartes_qui_restent[j]/nb_carte_en_jeu
+    }
+    let max_proba = list[0];
+    let max_index=0
+    for (var i = 1; i < list.length; i++) {
+      if (list[i] > max_proba) {
+        max_proba = list[i];
+        max_index=i
       }
     }
+    return max_index
   }
 
   reshuffleDiscard() {

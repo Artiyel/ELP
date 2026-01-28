@@ -30,9 +30,9 @@ Points Joueur += (sommes des cartes) * (multiplicateurs) + (points bonus) + (fli
 - [ ] rajouter le fichier de log (Matin)
 - [ ] rajouter "IA" de comptage de carte 
   - [ ] --> renvoie la carte la plus probable de sortir 
-    - [ ] regarder toute les cartes dans le jeu
-    - [ ] compter chaque cartes encore présentes
-    - [ ] calculer les chances
+    - [x] regarder toute les cartes dans le jeu
+    - [x] compter chaque cartes encore présentes
+    - [x] calculer les chances
     - [ ] renvoyer la chance la plus élevée
   - [ ] --> regarde si ça bénéficie le joueur  (si il bust ou non)
     - [ ] acceder a la main du joueur

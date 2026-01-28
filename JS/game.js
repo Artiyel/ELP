@@ -11,6 +11,7 @@ class Game {
     this.currentPlayerIndex = 0;
     this.log = [];
     this.gameOver = false;
+    this.prediction=[]
   }
 
   init(playerNames) {
@@ -65,6 +66,15 @@ class Game {
     "TOTAL:", this.deck.length + this.discard.length
   );
     return card;
+  }
+
+  predict() {
+    cartes_qui_restent=[]
+    for (var i = 0; i < this.deck.length; i++){
+      for (var j = 0; i < 12; j++){
+        if j === this.deck[i]:
+      }
+    }
   }
 
   reshuffleDiscard() {

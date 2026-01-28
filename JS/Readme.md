@@ -28,5 +28,14 @@ Points Joueur += (sommes des cartes) * (multiplicateurs) + (points bonus) + (fli
 
 # TO DO
 - [ ] rajouter le fichier de log (Matin)
-- [ ] rajouter "IA" de comptage de carte  
+- [ ] rajouter "IA" de comptage de carte 
+  - [ ] --> renvoie la carte la plus probable de sortir 
+    - [ ] regarder toute les cartes dans le jeu
+    - [ ] compter chaque cartes encore présentes
+    - [ ] calculer les chances
+    - [ ] renvoyer la chance la plus élevée
+  - [ ] --> regarde si ça bénéficie le joueur  (si il bust ou non)
+    - [ ] acceder a la main du joueur
+    - [ ] comparer carte prédite avec cartes de la main
+    - [ ] afficher dans la console l'avis de l'ia
 - [ ] Stats ? (pourcentage de type de carte tirée, nb de flip7 sur la partie, personne qui a le plus été éliminé, durée moyenne d'une manche/tour )

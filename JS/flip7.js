@@ -2,6 +2,21 @@
 
 const readlineSync = require("readline-sync"); // pour lire les entrées clavier
 const Game = require("./game"); //on va chercher game.js
+const fs = require('node:fs');
+
+async function createlog(content){
+   // On enregistre les logs      
+  let date = new Date
+  try {
+      fs.writeFileSync('logs/log_'.concat(date.getHours(),date.getMinutes(),date.getSeconds()), content);
+            // file written successfully
+      } catch (err) {
+      console.error(err);
+      }
+
+
+
+}
 
 async function main() {
   // fonction qui fait tourner le jeu 
@@ -32,7 +47,7 @@ async function main() {
       if (player.status !== "active") continue;
 
       console.log(`\n ${player.name}'s turn (score: ${player.score})`);
-      const action = readlineSync.keyIn(`Press [Space] to HIT, [f] to STAY, [q] to QUIT , [h] for AI help :`, {limit: " fq"}); // on fait jouer le joueur 
+      const action = readlineSync.keyIn(`Press [Space] to HIT, [f] to STAY, [q] to QUIT , [h] for AI help :`, {limit: " fqh"}); // on fait jouer le joueur 
       if (action === " ") { // si le joueur HIT
         logline += game.controller.hit(player); // on récupère la carte tirée
         logline += ', hit, ';
@@ -44,7 +59,8 @@ async function main() {
         logline += "game closed";
         logtxt += Date().concat(logline,"\n")
         console.log("Bye !");
-        console.log(logtxt);
+        createlog(logtxt)
+
         process.exit(0); // 0 = succès
       }
       else if (action === "h") {//si on décide de demander l'aide de l'ia
@@ -63,7 +79,7 @@ async function main() {
       game.players.forEach(p => console.log(`${p.name}: ${p.score} points`)); // on affiche leurs scores
       if (game.checkForWinner()) { // si un joueur a atteint 200 points 
         console.log("Fin de la partie !"); 
-        console.log(logtxt);
+        createlog(logtxt)
         process.exit(0); // quitte Node.js proprement
     }
 

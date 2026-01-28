@@ -77,11 +77,11 @@ class Game {
     for (var j = 0; j < 13; j++){
         liste_proba[j]= cartes_qui_restent[j]/nb_carte_en_deck
     }
-    let max_proba = list[0];
+    let max_proba = liste_proba[0];
     let max_index=0
-    for (var i = 1; i < list.length; i++) {
-      if (list[i] > max_proba) {  
-        max_proba = list[i];
+    for (var i = 1; i < liste_proba.length; i++) {
+      if (liste_proba[i] > max_proba) {  
+        max_proba = liste_proba[i];
         max_index=i
       }
     }
@@ -90,7 +90,7 @@ class Game {
 
   is_beneficial(player) {
     const main_joueur = new Set(player.cards.filter(c => typeof c === "number"));
-    carte_qui_sort_probablement = this.predict()
+    let carte_qui_sort_probablement = this.predict()
     if (main_joueur.has(carte_qui_sort_probablement)) { //si la carte qui sort est dans la main du joueur
       console.log("The so-called 'AI' recommends that you 'HIT'")
     }

@@ -28,16 +28,19 @@ class Controller {
     // ----- ACTIONS -----
     if (card === "secondChance") {
       this.applySecondChance(player);
+      this.game.discard.push(card);
       return card;
     }
 
     if (card === "freeze") {
       this.applyFreeze(player);
+      this.game.discard.push(card);
       return; card
     }
 
     if (card === "flip3") {
       this.handleFlip3(player);
+      this.game.discard.push(card);
       return card;
     }
   }
@@ -81,7 +84,7 @@ class Controller {
         `${player.name} already has Second Chance and must give it`
     );
 
-    const target = this.chooseTargetManually(player);
+    const target = this.chooseTargetManually(player, "SecondChance", "secondChance");
     if (!target) return;
 
     target.secondChance = true;
@@ -93,7 +96,7 @@ class Controller {
 
 
   applyFreeze(player) {
-    const target = this.chooseTargetManually(player);
+    const target = this.chooseTargetManually(player, "Freeze", "freeze");
     if (!target) return;
 
     target.status = "busted";
@@ -104,7 +107,7 @@ class Controller {
   // FLIP 3
   // ======================
   handleFlip3(player) {
-    const target = this.chooseTargetManually(player);
+    const target = this.chooseTargetManually(player, "Flip3", "flip3");
     if (!target) return; 
 
     this.game.logAction(`${target.name} activates Flip3!`);
@@ -124,6 +127,7 @@ class Controller {
           } else {
             target.status = "busted";
             this.game.logAction(`${target.name} busted during Flip3!`);
+            break;
           }
         } else {
           target.cards.push(card);
@@ -140,13 +144,14 @@ class Controller {
       } else {
         // action → stockée
         pendingActions.push(card);
+        this.game.discard.push(card);
       }
     }
 
     // actions données même si busted
     for (const action of pendingActions) {
         if (action === "freeze") {
-            const target_2 = this.chooseTargetManually(target);
+            const target_2 = this.chooseTargetManually(target, "Freeze", "freeze");
             if (target_2) {
             target_2.status = "busted";
             this.game.logAction(
@@ -156,7 +161,7 @@ class Controller {
         }
 
         if (action === "secondChance") {
-            const target_2 = this.chooseTargetManually(target);
+            const target_2 = this.chooseTargetManually(target, "SecondChance", "secondChance");
             if (target_2) {
             target_2.secondChance = true;
             this.game.logAction(
@@ -168,45 +173,43 @@ class Controller {
 
   }
 
-  applyDeferredAction(card, fromPlayer) {
-    const target = this.chooseTarget(fromPlayer);
 
-    if (card === "freeze") {
-      target.status = "busted";
-      this.game.logAction(
-        `${fromPlayer.name} gives Freeze to ${target.name}`
-      );
-    }
-
-    if (card === "secondChance") {
-      target.secondChance = true;
-      this.game.logAction(
-        `${fromPlayer.name} gives Second Chance to ${target.name}`
-      );
-    }
-  }
-
-  // ======================
-  // UTIL
-  // ======================
-  chooseTargetManually(fromPlayer) {
+  chooseTargetManually(fromPlayer, actionName, card) {
     const readlineSync = require("readline-sync");
 
+    // On exclut le joueur lui-même
     const targets = this.game.players.filter(
-        p => p.status === "active"
+        p => p.status === "active" && p !== fromPlayer
     );
 
+    if (targets.length === 0) {
+        // Aucun autre joueur actif
+        if (actionName !== "SecondChance") {
+            this.game.logAction(
+                `${fromPlayer.name} keeps ${actionName} because no other players are active`
+            );
+        } else {
+            this.game.logAction(
+                `${fromPlayer.name} discards ${actionName} because no other players are active`
+            );
+            this.game.discard.push(card);
+        }
+        return null;
+    }
+
+    // Affichage des cibles possibles
     targets.forEach((p, i) => {
         console.log(`[${i}] ${p.name}`);
     });
 
     let index;
     do {
-        index = readlineSync.questionInt("Choose a player to give your card to : ");
+        index = readlineSync.questionInt("Choose a player to give your card to: ");
     } while (index < 0 || index >= targets.length);
 
     return targets[index];
 }
+
 
 
   stay(player) {

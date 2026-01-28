@@ -11,6 +11,7 @@ class Game {
     this.currentPlayerIndex = 0;
     this.log = [];
     this.gameOver = false;
+    this.prediction=[]
   }
 
   init(playerNames) {
@@ -61,6 +62,15 @@ class Game {
     return card;
   }
 
+  predict() {
+    cartes_qui_restent=[]
+    for (var i = 0; i < this.deck.length; i++){
+      for (var j = 0; i < 12; j++){
+        if j === this.deck[i]:
+      }
+    }
+  }
+
   reshuffleDiscard() {
     this.logAction("Pioche vide → mélange de la défausse");
     this.deck = this.shuffle([...this.discard]);
@@ -95,26 +105,28 @@ class Game {
 }
   
 
-  calculateScores() {
-    this.players.forEach(player => {
-      if (player.status === "busted") return;
+ calculateScores() {
+  this.players.forEach(player => {
+    if (player.status === "busted") return;
 
-      let sum = 0;
-      let mult = 1;
-      let bonus = 0;
+    let sum = 0;
+    let mult = 1;
+    let bonus = 0;
 
-      player.cards.forEach(c => {
-        if (typeof c === "number") sum += c;
-        else if (c === "+") bonus += 5;
-        else if (c === "x") mult *= 2;
-      });
-
-      if (this.isFlip7(player)) bonus += 15;
-
-      player.score += sum * mult + bonus;
-      this.endOfRoundCleanup()
+    player.cards.forEach(c => {
+      if (typeof c === "number") sum += c;
+      else if (c === "+") bonus += 5;
+      else if (c === "x") mult *= 2;
     });
-  }
+
+    if (this.isFlip7(player)) bonus += 15;
+
+    player.score += sum * mult + bonus;
+  });
+
+  this.endOfRoundCleanup();
+}
+
 
   resetPlayersForNextRound() {
     this.players.forEach(p => {

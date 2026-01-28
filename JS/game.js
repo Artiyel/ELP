@@ -28,6 +28,7 @@ class Game {
 
   initDeck() {
     this.deck = [];
+    console.trace("INIT DECK CALLED");
 
     for (let i = 0; i <= 12; i++) {
       let count = 12 - i + 1;
@@ -58,6 +59,11 @@ class Game {
     }
 
     const card = this.deck.pop();
+    console.log(
+    "DECK:", this.deck.length,
+    "DISCARD:", this.discard.length,
+    "TOTAL:", this.deck.length + this.discard.length
+  );
     return card;
   }
 
@@ -95,26 +101,28 @@ class Game {
 }
   
 
-  calculateScores() {
-    this.players.forEach(player => {
-      if (player.status === "busted") return;
+ calculateScores() {
+  this.players.forEach(player => {
+    if (player.status === "busted") return;
 
-      let sum = 0;
-      let mult = 1;
-      let bonus = 0;
+    let sum = 0;
+    let mult = 1;
+    let bonus = 0;
 
-      player.cards.forEach(c => {
-        if (typeof c === "number") sum += c;
-        else if (c === "+") bonus += 5;
-        else if (c === "x") mult *= 2;
-      });
-
-      if (this.isFlip7(player)) bonus += 15;
-
-      player.score += sum * mult + bonus;
-      this.endOfRoundCleanup()
+    player.cards.forEach(c => {
+      if (typeof c === "number") sum += c;
+      else if (c === "+") bonus += 5;
+      else if (c === "x") mult *= 2;
     });
-  }
+
+    if (this.isFlip7(player)) bonus += 15;
+
+    player.score += sum * mult + bonus;
+  });
+
+  this.endOfRoundCleanup();
+}
+
 
   resetPlayersForNextRound() {
     this.players.forEach(p => {

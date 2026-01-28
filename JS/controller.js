@@ -28,16 +28,19 @@ class Controller {
     // ----- ACTIONS -----
     if (card === "secondChance") {
       this.applySecondChance(player);
+      this.game.discard.push(card);
       return;
     }
 
     if (card === "freeze") {
       this.applyFreeze(player);
+      this.game.discard.push(card);
       return;
     }
 
     if (card === "flip3") {
       this.handleFlip3(player);
+      this.game.discard.push(card);
       return;
     }
   }
@@ -140,6 +143,7 @@ class Controller {
       } else {
         // action → stockée
         pendingActions.push(card);
+        this.game.discard.push(card);
       }
     }
 
@@ -168,23 +172,6 @@ class Controller {
 
   }
 
-  applyDeferredAction(card, fromPlayer) {
-    const target = this.chooseTarget(fromPlayer);
-
-    if (card === "freeze") {
-      target.status = "busted";
-      this.game.logAction(
-        `${fromPlayer.name} gives Freeze to ${target.name}`
-      );
-    }
-
-    if (card === "secondChance") {
-      target.secondChance = true;
-      this.game.logAction(
-        `${fromPlayer.name} gives Second Chance to ${target.name}`
-      );
-    }
-  }
 
   // ======================
   // UTIL

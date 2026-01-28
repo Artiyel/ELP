@@ -15,32 +15,32 @@ class Controller {
 
     if (typeof card === "number") {
       this.handleNumberCard(player, card);
-      return;
+      return card;
     }
 
     if (card === "+" || card === "x") {
       player.cards.push(card);
       this.game.logAction(`${player.name} keeps bonus ${card}`);
-      return;
+      return card;
     }
 
 
     if (card === "secondChance") {
       this.applySecondChance(player);
       this.game.discard.push(card);
-      return;
+      return card;
     }
 
     if (card === "freeze") {
       this.applyFreeze(player); // si c'est une freeze
       this.game.discard.push(card); // la carte est mise dans la défausse
-      return;
+      return card;
     }
 
     if (card === "flip3") {
       this.handleFlip3(player); // si c'est une fli3
       this.game.discard.push(card); // la carte est mise dans la défausse
-      return;
+      return card;
     }
   }
 

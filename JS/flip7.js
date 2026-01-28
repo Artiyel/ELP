@@ -1,5 +1,4 @@
-// index.js
-"use strict";
+"use strict"; // active le mode strict : JS =  plus sûr et moins permissif
 
 const readlineSync = require("readline-sync"); // pour lire les entrées clavier
 const Game = require("./game"); //on va chercher game.js
@@ -55,7 +54,6 @@ async function main() {
       }
       logline += player.score; // le score du joueur
       logtxt += Date().concat(logline,"\n")
-      console.log(logline);
       if (game.endOfRound()) break;
     }
 

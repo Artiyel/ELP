@@ -1,5 +1,4 @@
-// index.js
-"use strict";
+"use strict"; // active le mode strict : JS =  plus sûr et moins permissif
 
 const readlineSync = require("readline-sync"); // pour lire les entrées clavier
 const Game = require("./game"); //on va chercher game.js

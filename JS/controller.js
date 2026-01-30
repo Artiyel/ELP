@@ -110,24 +110,7 @@ class Controller {
       this.game.logAction(`${target.name} drew ${card}`);
 
       if (typeof card === "number") { // si la carte est un nombre
-        if (target.cards.includes(card)) { // si le joueur a déjà cette carte
-          if (target.secondChance) { // si il a une second chance
-            target.secondChance = false;
-            target.cards.push(card); // il garde la carte nombre
-            this.game.logAction(`${target.name} used Second Chance!`);
-          } else {
-            target.status = "busted"; // sinon il perd 
-            this.game.logAction(`${target.name} busted during Flip3!`);
-            break
-          }
-        } else {
-          target.cards.push(card); // sinon il garde la carte nombre
-        }
-
-        if (this.game.isFlip7(target)) {
-          this.game.logAction(`${target.name} completed FLIP 7!`); // si le joueur a un flip7
-          break;
-        }
+        this.handleNumberCard(player, card)
 
       } else if (card === "+" || card === "x") { // si le joueur a une carte action
         target.cards.push(card);

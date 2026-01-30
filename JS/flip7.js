@@ -29,6 +29,13 @@ async function main() {
 
   const numPlayers = parseInt(readlineSync.question("Number of players: "));
   const players = [];
+
+  var fs = require('fs');
+  var dir = './logs';
+
+  if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
   
   for (let i = 0; i < numPlayers; i++) {
     const name = readlineSync.question(`Enter name for player ${i + 1}: `); // pour chaque joueur on récupère son nom

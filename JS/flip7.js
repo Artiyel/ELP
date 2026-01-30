@@ -80,7 +80,7 @@ async function main() {
       if (game.checkForWinner()) { // si un joueur a atteint 200 points 
         console.log("Fin de la partie !"); 
         createlog(logtxt)
-        process.exit(0); // quitte Node.js proprement
+        process.exit(0); // quitter proprement
     }
 
       // Réinitialiser pour nouvelle manche

@@ -64,17 +64,3 @@ Le jeu intègre une fonction `is_beneficial` qui analyse le contenu restant du d
     ```bash
     node flip7.js
 
-# TO DO
-- [ ] rajouter le fichier de log (Matin)
-- [x] rajouter "IA" de comptage de carte 
-  - [x] --> renvoie la carte la plus probable de sortir 
-    - [x] regarder toute les cartes dans le jeu
-    - [x] compter chaque cartes encore présentes
-    - [x] calculer les chances
-    - [x] renvoyer la carte avec chance la plus élevée
-  - [x] --> regarde si ça bénéficie le joueur  (si il bust ou non)
-    - [x] acceder a la main du joueur
-    - [x] comparer carte prédite avec cartes de la main
-    - [x] afficher dans la console l'avis de l'ia
-  - [x] implementer le choix de l'option dans le reste du code
-- [ ] Stats ? (pourcentage de type de carte tirée, nb de flip7 sur la partie, personne qui a le plus été éliminé, durée moyenne d'une manche/tour )

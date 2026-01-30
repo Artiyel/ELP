@@ -115,7 +115,7 @@ func sobelWorker(src *image.RGBA, out *image.RGBA, jobs <-chan Job, wg *sync.Wai
 
 			// Calcul manuel de la magnitude (Approximation rapide : |Gx| + |Gy|)
 			mag := math.Sqrt(Gx*Gx + Gy*Gy)
-			// Saturation de la valeur pour rester dans [0, 255]
+			// Saturation de la valeur pour rester dans [0, 255] car uint ne convertit que de 0 à 255
 			if mag > 255 {
 				mag = 255
 			}

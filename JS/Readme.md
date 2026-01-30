@@ -1,5 +1,14 @@
-# Rewrite des Règles
-## Étapes d'une partie :
+# Flip7 Solo - Jeu de cartes 
+
+**Flip7 Solo** est une adaptation numérique en JavaScript du jeu de cartes "Flip 7". C'est un jeu où l'objectif est d'accumuler le plus de points sans jamais piocher deux fois le même chiffre dans une même manche.
+
+## Présentation du jeu
+
+Le jeu se déroule en plusieurs manches successives. Les joueurs accumulent des points au fil de la partie jusqu'à ce qu'un vainqueur soit déclaré.
+
+## Règles implémentées
+
+### Étapes d'une partie :
 1. Au tout début on indique le nombre de joueur, avec un nom associé a chaque
 1. le jeu se déroule en plusieur manches, et chaque
 1. premier tour :
@@ -11,20 +20,49 @@ chaque joueur prend une carte, si cette carte est une action elle est executée 
 2. les joueurs calculent leurs points a la fin de chaque manches (cf Score)
 3. le jeu se continue avec d'autres manches tant que personne n'a 200 points
 
-## Cartes
+### Cartes
 * Cartes normales : 12 douzes, 11 onzes, 10 dix, ...., 1 un et 1 zéro
 * Cartes spéciales : les cartes spéciales sont dans le deck avec les autres, elle peuvent etre appliqué a n'importe quel joueur possédant des cartes, y compris sois même.
     * Cartes action :
-        * Frezze : instant élimination de la manche.
+        * Freeze : instant élimination de la manche.
         * flip 3 : pioche 3 cartes, si tu pioche des actions elles sont éxécutée (données) a la fin, si tu fini un flip 7 tu interrompt le flip 3, si tu perd et que tu a pioché une action, tu la donne quand même.
         * Second chance : joker, permet de ne pas perdre une seule fois, si un deuxième est pioché, il doit etre donné.
     * Cartes bonus :
         * Cartes "+" : score additionné a celui des cartes a la fin de la manche
         * Carte "x" : score des cartes multiplié
 
-## Score
+### Score
 Le Score total est la somme des Cartes, multiplié par un éventuel multiplicateur, additionné aux éventuels points bonus, auquel s'ajoutent 15 en cas de victoire par flip7  
 Points Joueur += (sommes des cartes) * (multiplicateurs) + (points bonus) + (flip7)
+
+## Commandes du jeu
+
+Lors de votre tour, utilisez les touches suivantes :
+* **`Espace` (HIT)** : Piocher une nouvelle carte.
+* **`f` (STAY)** : S'arrêter et valider ses points pour la manche.
+* **`h` (AI help)** : Demander l'avis de l'IA sur la probabilité du prochain tirage.
+* **`q` (QUIT)** : Quitter la partie et afficher les logs détaillés.
+
+
+
+## Système d'aide (IA)
+
+Le jeu intègre une fonction `is_beneficial` qui analyse le contenu restant du deck :
+1. Elle calcule la probabilité d'apparition de chaque chiffre en fonction des cartes restantes dans la pioche.
+2. Si le chiffre ayant la plus forte probabilité de sortir est **déjà présent dans votre main**, l'IA vous conseille de vous arrêter (**STAY**).
+3. Sinon, elle vous encourage à continuer (**HIT**).
+
+---
+
+## Installation
+
+1. Assurez-vous d'avoir **Node.js** installé.
+2. Installez la dépendance `readline-sync` :
+   ```bash
+   npm install readline-sync
+3. Pour lancer le jeu, entrez la commande suivante dans le terminal, depuis le répertoire `JS` :
+    ```bash
+    node flip7.js
 
 # TO DO
 - [ ] rajouter le fichier de log (Matin)

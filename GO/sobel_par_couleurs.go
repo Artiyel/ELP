@@ -167,7 +167,7 @@ func sobelWorker(src *image.RGBA, out *image.RGBA, jobs <-chan Job, wg *sync.Wai
 			out.Pix[outIdx] = uint8(magR)
 			out.Pix[outIdx+1] = uint8(magG)
 			out.Pix[outIdx+2] = uint8(magB)
-			out.Pix[outIdx+3] = 255
+			out.Pix[outIdx+3] = 255 // Transparence
 		}
 		wg.Done() // Signal de fin du job
 	}

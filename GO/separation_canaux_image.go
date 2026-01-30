@@ -32,15 +32,15 @@ func worker(rgba, rImg, gImg, bImg *image.RGBA, jobs <-chan Job, wg *sync.WaitGr
 			for x := bounds.Min.X; x < bounds.Max.X; x++ {
 				i := rowOffset + (x-bounds.Min.X)*4
 				// Lecture des composantes RGB
-				r := rgba.Pix[i]
-				g := rgba.Pix[i+1]
-				b := rgba.Pix[i+2]
+				r := rgba.Pix[i]   // rouge (Pix = tableau qui contient les pixels de l'image, chaque pixel est stocké dedans sur 4 octets)
+				g := rgba.Pix[i+1] // vert
+				b := rgba.Pix[i+2] // bleu
 
 				// Rouge
 				rImg.Pix[i] = r
 				rImg.Pix[i+1] = 0
 				rImg.Pix[i+2] = 0
-				rImg.Pix[i+3] = 255
+				rImg.Pix[i+3] = 255 // Transparence
 
 				// Vert
 				gImg.Pix[i] = 0
@@ -68,7 +68,7 @@ func SplitChannelsWorkerPool(rgba *image.RGBA, numWorkers, blockSize int) (*imag
 	gImg := image.NewRGBA(bounds)
 	bImg := image.NewRGBA(bounds)
 
-	jobs := make(chan Job, numWorkers*2) // buffer pour éviter blocage
+	jobs := make(chan Job, numWorkers*2) // buffer avec le *2 pour éviter blocage
 
 	var wg sync.WaitGroup
 	wg.Add(numWorkers) // attente de la fin des workers
@@ -133,7 +133,7 @@ func main() {
 	rgba := image.NewRGBA(bounds)
 	draw.Draw(rgba, bounds, img, bounds.Min, draw.Src)
 
-	// Traitement en worker pool avec blocs de 50 lignes
+	// Traitement en worker pool avec blocs de 100 lignes
 	tjob := time.Now()
 	rImg, gImg, bImg := SplitChannelsWorkerPool(rgba, *numWorkers, 100)
 	println("temps de calcul     : ", time.Now().Sub(tjob)/1000000, "ms")

@@ -4,10 +4,10 @@ Ce projet implémente différents algorithmes de traitement d'image en exploitan
 
 ---
 
-## Fonctionnalité principale : Sobel par couleurs
+## Fonctionnalité principale : Sobel avec couleurs
 
 Le script **`sobel_par_couleurs.go`** est le coeur de ce projet. Contrairement à un filtre Sobel classique qui traite l'image en noir et blanc, cette version :
-* Applique l'algorithme de détection de contours directement sur les canaux **Rouge, Vert et Bleu** simultanément.
+* Applique l'algorithme de détection de contours directement sur les canaux **rouge, vert et bleu** simultanément.
 * Préserve les variations de couleurs dans les contours pour un rendu visuel plus riche.
 
 ---
